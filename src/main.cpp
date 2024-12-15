@@ -94,6 +94,13 @@ void setup() {
 }
 
 void loop() {
+  if (restart) {
+    Serial.println("Restarting...");
+    restart = false;
+    delay(3000);
+    ESP.restart();
+  }
+
   if (memory->ready()) {
     listenForSetupMode();
 
@@ -101,13 +108,6 @@ void loop() {
       connectMqtt();
     }
     mqttClient.loop();
-  }
-
-  if (restart) {
-    Serial.println("Restarting...");
-    restart = false;
-    delay(3000);
-    ESP.restart();
   }
 }
 
@@ -118,10 +118,11 @@ void wifiSetup() {
   WiFi.begin(wifiName, wifiPassword);
 
   Serial.printf("Connecting to %s", wifiName);
-  while (WiFi.status() != WL_CONNECTED)
+  while (WiFi.status() != WL_CONNECTED && !restart)
   {
     flash(250);
     Serial.print(".");
+    listenForSetupMode();
   }
   Serial.println();
 
